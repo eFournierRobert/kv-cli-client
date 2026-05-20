@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"kv-cli-client/internal/models"
 	"net"
 )
@@ -15,5 +16,16 @@ func SendSet(key, value string) {
 
 func sendPacket(packet []byte) error {
 	conn, err := net.Dial("tcp", server)
+	if err != nil {
+		return err
+	}
 	defer conn.Close()
+
+	if n, err := conn.Write(packet); err != nil {
+		return err
+	} else if n < len(packet) {
+		return errors.New("packet wasn't fully sent")
+	}
+
+	return nil
 }
